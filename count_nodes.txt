@@ -1,0 +1,4 @@
+MATCH (`n: *`) RETURN count(*)+" nodes" as total
+
+
+

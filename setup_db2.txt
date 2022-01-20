@@ -1,0 +1,33 @@
+LOAD CSV WITH HEADERS FROM "file:///dataset/customers.csv" AS row
+WITH row
+WHERE row.country IN $param
+CREATE (n:Customer)
+SET n = row;
+
+CREATE INDEX FOR (c:Customer) ON (c.customerID);
+
+LOAD CSV WITH HEADERS FROM "file:///dataset/orders.csv" AS row
+WITH row
+MATCH (c:Customer)
+WHERE row.customerID = c.customerID
+CREATE (o:Order)
+SET o = row;
+
+CREATE INDEX FOR (o:Order) ON (o.orderID);
+
+MATCH (c:Customer),(o:Order)
+WHERE c.customerID = o.customerID
+CREATE (c)-[:PURCHASED]->(o);
+
+LOAD CSV WITH HEADERS FROM "file:///dataset/products.csv" AS row
+CREATE (n:Product)
+SET n.productID = row.productID;
+
+CREATE INDEX FOR (p:Product) ON (p.productID);
+
+LOAD CSV WITH HEADERS FROM "file:///dataset/order-details.csv" AS row
+MATCH (p:Product), (o:Order)
+WHERE p.productID = row.productID AND o.orderID = row.orderID
+CREATE (o)-[details:ORDERS]->(p)
+SET details = row,
+details.quantity = toInteger(row.quantity);

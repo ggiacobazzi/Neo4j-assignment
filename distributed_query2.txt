@@ -1,0 +1,9 @@
+UNWIND [1,2]AS gid
+CALL {
+	USE fabricnw.graph(gid)
+	MATCH (c:Customer)
+	WHERE c.customerID STARTS WITH 'A'
+	RETURN c.customerID AS name, c.country AS country
+}
+RETURN name, country
+LIMIT 5;

@@ -1,0 +1,15 @@
+CALL {
+USE fabricnw.product
+MATCH (p:Product{discontinued:true})-[:PART_OF]->(c:Category{categoryName:'Meat/Poultry'})
+              RETURN COLLECT(p.productID) AS pids
+}
+WITH *, [g IN fabricnw.graphIds() WHERE g<>0] AS gids
+UNWIND gids AS gid
+CALL {
+	USE fabricnw.graph(gid)
+	WITH pids
+	UNWIND pids as pid
+	MATCH (p:Product{productID:pid})<-[:ORDERS]-(:Order)<-[:PURCHASED]-(c:Customer)
+	RETURN DISTINCT c.customerID AS customer, c.country AS country
+}
+RETURN customer, country
